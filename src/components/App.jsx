@@ -55,7 +55,7 @@ export function App() {
   };
 
   const onHandleImage = image => {
-    setIsShowModal(!IsShowModal);
+    setIsShowModal(IsShowModal => !IsShowModal);
     setShowImage(image);
   };
 
