@@ -25,8 +25,8 @@ export function App() {
       if (totalHits === 0) {
         return toast.error(`There are no images with query "${query}"`);
       }
-      setImages([...images, ...hits]);
-      setIsShowLoadMore(page < Math.ceil(totalHits / 12));
+      setImages(images => [...images, ...hits]);
+      setIsShowLoadMore(page => page < Math.ceil(totalHits / 12));
     } catch (error) {
       setError(error.message);
       return toast.error(`There some error in the application: "${hasError}"`);
