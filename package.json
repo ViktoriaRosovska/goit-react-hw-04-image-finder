@@ -1,8 +1,8 @@
 {
-  "name": "goit-react-hw-04-images",
+  "name": "goit-react-hw-04-image-finder",
   "version": "0.1.0",
   "private": true,
-  "homepage": "https://ViktoriaRosovska/goit-react-hw-04-images/",
+  "homepage": "https://ViktoriaRosovska/goit-react-hw-04-image-finder/",
   "dependencies": {
     "@emotion/react": "^11.11.1",
     "@emotion/styled": "^11.11.0",
