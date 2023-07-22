@@ -1,6 +1,4 @@
-import { Component } from 'react';
 import { ImageGallery } from './ImageGallery/ImageGallery';
-
 import { Searchbar } from './Searchbar/Searchbar';
 import * as APIservices from '../APIservices/APIservices';
 import { ToastContainer } from 'react-toastify';
@@ -9,100 +7,79 @@ import { toast } from 'react-toastify';
 import { Button } from './Button/Button';
 import { Modal } from './Modal/Modal';
 import { Loader } from './Loader/Loader';
+import { useEffect, useState } from 'react';
 
-export class App extends Component {
-  state = {
-    images: [],
-    page: 1,
-    query: '',
-    Isloading: false,
-    IsError: false,
-    error: null,
-    IsShowModal: false,
-    showImage: null,
-    isShowLoadMore: false,
-  };
+export function App() {
+  const [hasError, setError] = useState(null);
+  const [IsLoading, setIsLoading] = useState(false);
+  const [IsShowModal, setIsShowModal] = useState(false);
+  const [showImage, setShowImage] = useState(null);
+  const [IsShowLoadMore, setIsShowLoadMore] = useState(false);
+  const [images, setImages] = useState([]);
+  const [query, setQuery] = useState('');
+  const [page, setPage] = useState(1);
 
-  componentDidUpdate(_, prevState) {
-    if (
-      prevState.query !== this.state.query ||
-      prevState.page !== this.state.page
-    ) {
-      this.getImage();
-    }
-  }
-
-  async getImage() {
-    const { query, page } = this.state;
+  const getImage = async () => {
     try {
       const { totalHits, hits } = await APIservices.fetchImage(query, page);
       if (totalHits === 0) {
-        return toast.error(
-          `There are no images with query "${this.state.query}"`
-        );
+        return toast.error(`There are no images with query "${query}"`);
       }
-
-      this.setState(prevState => ({
-        images: [...prevState.images, ...hits],
-        isShowLoadMore: page < Math.ceil(totalHits / 12),
-      }));
+      setImages([...images, ...hits]);
+      setIsShowLoadMore(page < Math.ceil(totalHits / 12));
     } catch (error) {
-      this.setState({ error: error.message, IsError: true });
+      setError(error.message);
+      return toast.error(`There some error in the application: "${hasError}"`);
     } finally {
-      this.setState({ Isloading: false });
+      setIsLoading(false);
     }
-  }
-
-  onLoadMore = () => {
-    this.setState(prevState => ({ page: prevState.page + 1 }));
   };
 
-  setQuery = value => {
-    this.setState({
-      query: value,
-      page: 1,
-      IsError: false,
-      Isloading: true,
-      images: [],
-      isShowLoadMore: false,
-    });
+  useEffect(() => {
+    if (query && page) {
+      getImage();
+    }
+  }, [query, page]);
+
+  const onLoadMore = () => {
+    setPage(page => page + 1);
   };
 
-  onHandleImage = image => {
-    this.setState(state => ({
-      IsShowModal: !state.IsShowModal,
-      showImage: image,
-    }));
+  const setHandleQuery = value => {
+    setIsShowLoadMore(false);
+    setPage(1);
+    setQuery(value);
+    setImages([]);
+    setIsLoading(true);
   };
 
-  onCloseModal = () => {
-    this.setState({ IsShowModal: false });
+  const onHandleImage = image => {
+    setIsShowModal(!IsShowModal);
+    setShowImage(image);
   };
 
-  render() {
-    const { Isloading, images, isShowLoadMore, IsShowModal, showImage } =
-      this.state;
-    const hasImages = images.length > 0;
+  const onCloseModal = () => {
+    setIsShowModal(false);
+  };
 
-    return (
-      <div>
-        <Searchbar onSubmit={this.setQuery} />
-        {Isloading && <Loader />}
-        {hasImages && (
-          <ImageGallery images={images} onHandleImage={this.onHandleImage} />
-        )}
-        <ToastContainer
-          icon={false}
-          position="top-center"
-          autoClose={2000}
-          hideProgressBar={true}
-          theme="colored"
-        />
-        {isShowLoadMore && <Button onLoadMore={this.onLoadMore} />}
-        {IsShowModal && (
-          <Modal image={showImage} onCloseModal={this.onCloseModal} />
-        )}
-      </div>
-    );
-  }
+  const hasImages = images.length > 0;
+
+  return (
+    <div>
+      <Searchbar onSubmit={setHandleQuery} />
+      {IsLoading && <Loader />}
+      {hasImages && (
+        <ImageGallery images={images} onHandleImage={onHandleImage} />
+      )}
+      <ToastContainer
+        icon={false}
+        position="top-center"
+        autoClose={2000}
+        hideProgressBar={true}
+        theme="colored"
+      />
+      {IsShowLoadMore && <Button onLoadMore={onLoadMore} />}
+      {IsShowModal && <Modal image={showImage} onCloseModal={onCloseModal} />}
+    </div>
+  );
 }
