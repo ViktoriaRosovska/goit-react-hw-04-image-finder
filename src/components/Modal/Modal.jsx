@@ -3,17 +3,17 @@ import css from './Modal.module.css';
 import PropTypes from 'prop-types';
 
 export function Modal({ image, onCloseModal }) {
-  const onEsc = e => {
-    if (e.code === 'Escape') {
-      onCloseModal();
-    }
-  };
-
   useEffect(() => {
+    const onEsc = e => {
+      if (e.code === 'Escape') {
+        onCloseModal();
+      }
+    };
+
     window.addEventListener('keydown', onEsc);
 
     return () => window.removeEventListener('keydown', onEsc);
-  });
+  }, [onCloseModal]);
 
   const onClose = e => {
     if (e.target === e.currentTarget) {
