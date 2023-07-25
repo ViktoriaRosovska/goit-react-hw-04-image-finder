@@ -13,8 +13,7 @@ export function Modal({ image, onCloseModal }) {
     window.addEventListener('keydown', onEsc);
 
     return () => window.removeEventListener('keydown', onEsc);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+  });
 
   const onClose = e => {
     if (e.target === e.currentTarget) {

@@ -1,4 +1,3 @@
-/* eslint-disable react-hooks/exhaustive-deps */
 import { ImageGallery } from './ImageGallery/ImageGallery';
 import { Searchbar } from './Searchbar/Searchbar';
 import * as APIservices from '../APIservices/APIservices';
@@ -11,7 +10,7 @@ import { Loader } from './Loader/Loader';
 import { useEffect, useState } from 'react';
 
 export function App() {
-  const [hasError, setError] = useState(null);
+  const [, setHasError] = useState(null); // const [hasError, setHasError] = useState(null);
   const [IsLoading, setIsLoading] = useState(false);
   const [IsShowModal, setIsShowModal] = useState(false);
   const [showImage, setShowImage] = useState(null);
@@ -20,26 +19,36 @@ export function App() {
   const [query, setQuery] = useState('');
   const [page, setPage] = useState(1);
 
-  const getImage = async () => {
-    try {
-      const { totalHits, hits } = await APIservices.fetchImage(query, page);
-      if (totalHits === 0) {
-        return toast.error(`There are no images with query "${query}"`);
-      }
-      setImages(images => [...images, ...hits]);
-      setIsShowLoadMore(page => page < Math.ceil(totalHits / 12));
-    } catch (error) {
-      setError(error.message);
-      return toast.error(`There some error in the application: "${hasError}"`);
-    } finally {
-      setIsLoading(false);
-    }
-  };
-
   useEffect(() => {
-    if (query && page) {
-      getImage();
+    if (!query) {
+      return;
     }
+
+    const getImage = async () => {
+      try {
+        const { totalHits, hits } = await APIservices.fetchImage(query, page);
+        if (totalHits === 0) {
+          return toast.error(`There are no images with query "${query}"`);
+        }
+        const totalPages = Math.ceil(totalHits / 12);
+        if (page === 1) {
+          toast.success(
+            `${totalHits} images  and ${totalPages} pages were found for the query: "${query}"`
+          );
+        }
+        setIsShowLoadMore(page < totalPages);
+        setImages(images => [...images, ...hits]);
+      } catch (error) {
+        setHasError(error.message);
+        return toast.error(
+          `There is some error in the application: "${error.message}"`
+        );
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    getImage();
   }, [query, page]);
 
   const onLoadMore = () => {
@@ -52,6 +61,7 @@ export function App() {
     setQuery(value);
     setImages([]);
     setIsLoading(true);
+    setHasError(false);
   };
 
   const onHandleImage = image => {
